@@ -1,0 +1,12 @@
+[
+  {
+    "deviceId": "Microsoft Print to PDF",
+    "name": "Microsoft Print to PDF",
+    "paperSizes": [
+      "Carta",
+      "Tabl�ide",
+      "Of�cio",
+      "Extrato"
+    ]
+  }
+]
