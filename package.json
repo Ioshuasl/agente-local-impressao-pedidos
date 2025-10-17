@@ -2,9 +2,12 @@
   "name": "agente-local",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "print-agent.js",
+  "bin": "print-agent.js",
   "scripts": {
-    "start": "node print-agent.js"
+    "start": "node print-agent.js",
+    "main": "print-agent.js",
+    "pack": "pkg -t node22-win-x64 ./print-agent.js"
   },
   "keywords": [],
   "author": "",
@@ -17,12 +20,21 @@
     "escpos": "^3.0.0-alpha.6",
     "escpos-usb": "^3.0.0-alpha.4",
     "express": "^5.1.0",
+    "fontkit": "^2.0.4",
     "fs": "^0.0.1-security",
+    "nexe": "^5.0.0-beta.2",
     "node-printer": "^1.0.4",
     "pdf-to-printer": "^5.6.0",
     "pdfkit": "^0.17.2",
-    "pkg": "^5.8.1",
     "socket.io-client": "^4.8.1",
     "ws": "^8.18.3"
+  },
+  "devDependencies": {
+    "pkg": "^5.8.1"
+  },
+  "pkg": {
+    "assets": [
+      "printers.json"
+    ]
   }
 }

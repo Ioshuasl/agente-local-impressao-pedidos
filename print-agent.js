@@ -6,6 +6,12 @@ const PDFDocument = require("pdfkit");
 const app = express();
 const cors = require("cors")
 
+// Forçar codificação UTF-8
+process.env.NODE_OPTIONS = '--encoding utf-8';
+
+// O resto do seu código aqui
+console.log('Aplicação iniciada com codificação UTF-8');
+
 app.use(express.json());
 
 app.use(cors())
