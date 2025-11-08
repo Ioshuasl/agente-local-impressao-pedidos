@@ -53,73 +53,76 @@ app.get("/update-printers", async (req, res) => {
 function generatePDF(content) {
   return new Promise((resolve, reject) => {
     const tempPath = path.join(__dirname, `pedido_${Date.now()}.pdf`);
-    
+
     // Configurações para um cupom de 80mm
     const doc = new PDFDocument({
-      size: [226.77, 841.89], // 80mm de largura, altura longa
+      size: [226.77, 841.89], // 80mm de largura
       margins: { top: 15, bottom: 15, left: 10, right: 10 },
-      font: "Courier", // Fonte monoespaçada, ideal para recibos
     });
 
     const stream = fs.createWriteStream(tempPath);
     doc.pipe(stream);
 
+    // Definir fonte bold global
+    doc.font("Helvetica-Bold"); // Fonte negrito padrão
     const docWidth = doc.page.width;
     const margin = 10;
-    const contentWidth = docWidth - margin * 2;
 
     // Função para desenhar uma linha tracejada
     const drawDivider = () => {
-        doc.moveDown(0.5);
-        doc.strokeColor("#000")
-           .lineWidth(1)
-           .moveTo(margin, doc.y)
-           .lineTo(docWidth - margin, doc.y)
-           .dash(2, { space: 2 })
-           .stroke();
-        doc.moveDown(0.5);
+      doc.moveDown(0.5);
+      doc.strokeColor("#000")
+         .lineWidth(1)
+         .moveTo(margin, doc.y)
+         .lineTo(docWidth - margin, doc.y)
+         .dash(2, { space: 2 })
+         .stroke();
+      doc.moveDown(0.5);
     };
 
     // --- CABEÇALHO ---
-    doc.fontSize(12).text("RECIBO DE PEDIDO", { align: "center", bold: true });
+    doc.fontSize(12).text("RECIBO DE PEDIDO", { align: "center" });
     doc.fontSize(8).text(`ID do Pedido: #${content.id}`, { align: "center" });
     const orderDate = new Date(content.createdAt);
-    doc.text(`Data: ${orderDate.toLocaleDateString('pt-BR')}`, { align: "center" });
-    doc.text(`Hora: ${orderDate.toLocaleTimeString('pt-BR')}`, { align: "center" });
-    
+    doc.text(`Data: ${orderDate.toLocaleDateString("pt-BR")}`, { align: "center" });
+    doc.text(`Hora: ${orderDate.toLocaleTimeString("pt-BR")}`, { align: "center" });
+
     drawDivider();
 
     // --- DADOS DA EMPRESA ---
-    doc.fontSize(9).text(content.empresa.razaoSocial, { align: "center", bold: true });
+    doc.fontSize(9).text(content.empresa.razaoSocial, { align: "center" });
     doc.fontSize(8).text(`CNPJ: ${content.empresa.cnpj}`, { align: "center" });
-    
+
     drawDivider();
 
     // --- DADOS DO CLIENTE ---
     doc.fontSize(8).text(`Cliente: ${content.cliente.nome}`);
     doc.text(`Telefone: ${content.cliente.telefone}`);
     doc.text(`Pagamento: ${content.formaPagamento}`);
-    
+
     drawDivider();
 
     // --- ITENS ---
-    doc.fontSize(10).text("ITENS:", { bold: true });
+    doc.fontSize(10).text("ITENS:");
     doc.moveDown(0.5);
-    
-    content.itens.forEach(item => {
-        const itemTotal = (item.valor * item.quantidade).toFixed(2).replace('.', ',');
-        doc.fontSize(8).text(`${item.quantidade}x ${item.produto}`, { continued: true });
-        doc.text(`R$ ${itemTotal}`, { align: 'right' });
 
-        if (item.subItens && item.subItens.length > 0) {
-            item.subItens.forEach(sub => {
-                const subTotal = (sub.valor * sub.quantidade).toFixed(2).replace('.', ',');
-                doc.fontSize(7).fillColor('grey').text(`  - ${sub.nome}`, { continued: true, indent: 10 });
-                doc.text(`+ R$ ${subTotal}`, { align: 'right' });
-                doc.fillColor('black'); // Reseta a cor
-            });
-        }
-        doc.moveDown(0.3);
+    content.itens.forEach((item) => {
+      const itemTotal = (item.valor * item.quantidade).toFixed(2).replace(".", ",");
+      doc.fontSize(8).text(`${item.quantidade}x ${item.produto}`, { continued: true });
+      doc.text(`R$ ${itemTotal}`, { align: "right" });
+
+      // Subprodutos (agora também em negrito e mais visíveis)
+      if (item.subItens && item.subItens.length > 0) {
+        item.subItens.forEach((sub) => {
+          const subTotal = (sub.valor * sub.quantidade).toFixed(2).replace(".", ",");
+          doc.fontSize(8)
+            .fillColor("#333")
+            .text(`  - ${sub.nome}`, { continued: true, indent: 10 });
+          doc.text(`+ R$ ${subTotal}`, { align: "right" });
+          doc.fillColor("black");
+        });
+      }
+      doc.moveDown(0.3);
     });
 
     drawDivider();
@@ -127,16 +130,16 @@ function generatePDF(content) {
     // --- TOTAIS ---
     const { subtotal, taxaEntrega, valorTotal } = content.totais;
     doc.fontSize(8);
-    doc.text('Subtotal:', { continued: true });
-    doc.text(`R$ ${subtotal.toFixed(2).replace('.', ',')}`, { align: 'right' });
+    doc.text("Subtotal:", { continued: true });
+    doc.text(`R$ ${subtotal.toFixed(2).replace(".", ",")}`, { align: "right" });
 
-    doc.text('Taxa de Entrega:', { continued: true });
-    doc.text(`R$ ${taxaEntrega.toFixed(2).replace('.', ',')}`, { align: 'right' });
+    doc.text("Taxa de Entrega:", { continued: true });
+    doc.text(`R$ ${taxaEntrega.toFixed(2).replace(".", ",")}`, { align: "right" });
 
     doc.moveDown(0.5);
-    doc.fontSize(9).text('TOTAL:', { continued: true, bold: true });
-    doc.text(`R$ ${valorTotal.toFixed(2).replace('.', ',')}`, { align: 'right', bold: true });
-    
+    doc.fontSize(9).text("TOTAL:", { continued: true });
+    doc.text(`R$ ${valorTotal.toFixed(2).replace(".", ",")}`, { align: "right" });
+
     drawDivider();
 
     // --- RODAPÉ ---
@@ -147,6 +150,7 @@ function generatePDF(content) {
     stream.on("error", (err) => reject(err));
   });
 }
+
 
 
 app.post("/print", async (req, res) => {
