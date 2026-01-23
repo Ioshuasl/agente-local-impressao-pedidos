@@ -94,8 +94,23 @@ function generatePDF(content) {
     if (content.cliente.endereco) {
         doc.moveDown(0.3);
         const end = content.cliente.endereco;
+        
+        // 1. Logradouro e Número
         doc.fontSize(10).text(`End: ${end.logadouro}, ${end.numero}`);
+        
+        // 2. --- NOVA LÓGICA PARA QUADRA E LOTE ---
+        // Verifica se tem Quadra ou Lote e imprime na linha de baixo
+        if (end.quadra || end.lote) {
+            const txtQuadra = end.quadra ? `Qd. ${end.quadra}` : "";
+            const txtLote = end.lote ? `Lt. ${end.lote}` : "";
+            const separador = (txtQuadra && txtLote) ? " - " : "";
+            
+            doc.text(`${txtQuadra}${separador}${txtLote}`);
+        }
+        // ------------------------------------------
+
         doc.text(`Bairro: ${end.bairro}`);
+        
         if(end.complemento && end.complemento.length > 2) {
              doc.text(`Comp: ${end.complemento}`);
         }
